@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kavelle — interior design and architecture studio</title>
+<meta name="description" content="Kavelle designs private homes, villas and restaurants from the first sketch to the last cushion. Projects, services and a form to discuss yours.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23121414'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2334c49a' stroke-width='1.6'/%3E%3Cpath d='M12 9v14M12 16l7-7M12 16l7 7' fill='none' stroke='%2334c49a' stroke-width='1.6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..500&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="img/slide-1.webp">
+<style>
+  :root {
+    --bg: #121414;
+    --bg-2: #0b0c0c;
+    --ink: #e6e4df;
+    --dim: #9a9a96;
+    --accent: #34c49a;
+    --on-accent: #0b1c16;
+    --light: #e7e4dd;
+    --light-ink: #151716;
+    --pad: clamp(16px, 2.9vw, 42px);
+    --head: 80px;
+    --ease: cubic-bezier(.22, .9, .3, 1);
+    --display: "Italiana", "Didot", "Bodoni 72", serif;
+    --sans: "DM Sans", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: var(--head); -webkit-text-size-adjust: 100%; }
+  body { background: var(--bg); color: var(--ink); font: 400 15px/1.7 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  main { overflow-x: clip; } /* blocks waiting to slide in must not widen the page on phones */
+  img { display: block; max-width: 100%; height: auto; }
+  a { color: inherit; text-decoration: none; }
+  button, input, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .h2 { font: 400 42px/1.4 var(--display); letter-spacing: .04em; text-transform: uppercase; text-align: center; }
+  .caps { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }
+  .btn { display: inline-flex; align-items: center; gap: 12px; padding: 14px 26px; border: 0; border-radius: 0; background: var(--accent); color: var(--on-accent); font: 700 13px/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: background-color .3s, color .3s; }
+  .btn:hover { background: var(--ink); }
+  .btn .arr { transition: transform .4s var(--ease); }
+  .btn:hover .arr { transform: translateX(5px); }
+  .ph { position: relative; overflow: hidden; background: #1d2120; }
+  .ph img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* Header: transparent over the slider, solid once you scroll */
+  header { position: fixed; z-index: 30; top: 0; left: 0; right: 0; height: var(--head); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 var(--pad); transition: background-color .4s, backdrop-filter .4s; }
+  header.solid { background: rgba(18, 20, 20, .92); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  header nav { display: flex; gap: 34px; }
+  header nav a, .lang { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: #fff; transition: color .3s; }
+  header nav a:hover { color: var(--accent); }
+  .nav-l { justify-content: flex-end; padding-right: 38px; }
+  .nav-r { padding-left: 38px; }
+  .right { display: flex; align-items: center; justify-content: space-between; }
+  .logo { font: 400 34px/1 var(--display); letter-spacing: .14em; color: var(--accent); text-transform: uppercase; }
+  .lang { justify-self: end; font-weight: 700; }
+  .burger { display: none; width: 44px; height: 44px; padding: 0; border: 0; background: none; color: #fff; cursor: pointer; }
+
+  /* Slider */
+  .hero { position: relative; height: 100vh; height: 100svh; min-height: 560px; overflow: hidden; background: #000; }
+  .slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .8s ease, visibility 0s .8s; }
+  .slide.on { opacity: 1; visibility: visible; transition: opacity .8s ease, visibility 0s; }
+  .slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); }
+  .slide.on img { transform: scale(1); transition: transform 6.5s linear; }
+  .slide::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, .1) 60%), linear-gradient(0deg, rgba(0, 0, 0, .45), rgba(0, 0, 0, 0) 40%); }
+  .cap { position: absolute; z-index: 2; left: var(--pad); top: 50%; transform: translateY(-50%); max-width: 70vw; }
+  .cap h2 { overflow: hidden; font: 400 64px/1.2 var(--display); letter-spacing: .02em; text-transform: uppercase; color: #fff; }
+  .cap h2 .l { display: inline-block; white-space: pre; transform: translateY(100%); opacity: 0; }
+  .slide.on .cap h2 .l { transform: none; opacity: 1; transition: transform .9s var(--ease), opacity .9s; transition-delay: calc(.25s + var(--i) * 32ms); }
+  .cap .btn { margin-top: 22px; padding: 10px 14px; font-weight: 400; opacity: 0; transform: translateY(12px); }
+  .slide.on .cap .btn { opacity: 1; transform: none; transition: opacity .8s .7s, transform .8s .7s var(--ease), background-color .3s, color .3s; }
+  .hero-ctl { position: absolute; z-index: 3; right: var(--pad); bottom: 34px; display: flex; align-items: center; gap: 18px; color: #fff; }
+  .hero-ctl .count { font: 400 22px/1 var(--display); letter-spacing: .08em; }
+  .hero-ctl .count b { font-weight: 400; color: var(--accent); }
+  .hero-ctl button { display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid rgba(255, 255, 255, .5); border-radius: 50%; background: none; color: #fff; cursor: pointer; transition: border-color .3s, color .3s; }
+  .hero-ctl button:hover { border-color: var(--accent); color: var(--accent); }
+  .bars { position: absolute; z-index: 3; left: var(--pad); bottom: 40px; display: flex; gap: 8px; }
+  .bars i { position: relative; width: 44px; height: 2px; background: rgba(255, 255, 255, .25); overflow: hidden; }
+  .bars i::after { content: ""; position: absolute; inset: 0; background: var(--accent); transform: scaleX(0); transform-origin: left; }
+  .bars i.done::after { transform: scaleX(1); }
+  .bars i.run::after { transform: scaleX(1); transition: transform var(--dur, 5s) linear; }
+
+  section { padding: 120px 0; }
+  .lead { max-width: 52ch; margin: 18px auto 0; text-align: center; color: var(--dim); }
+
+  /* Projects: three categories in a row that scrolls sideways */
+  .cats { display: flex; gap: 42px; margin-top: 56px; padding: 0 var(--pad); overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--pad); scrollbar-width: none; cursor: grab; }
+  .cats::-webkit-scrollbar { display: none; }
+  .cats.drag { cursor: grabbing; scroll-snap-type: none; }
+  .cat { position: relative; flex: 0 0 min(620px, 80vw); aspect-ratio: 620 / 460; scroll-snap-align: start; }
+  .cat img { transition: transform 1.2s var(--ease); }
+  .cat:hover img { transform: scale(1.05); }
+  .cat::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0) 45%); }
+  .cat span { position: absolute; z-index: 1; left: 30px; bottom: 26px; font: 400 26px/1.2 var(--display); color: #fff; }
+  .cat em { position: absolute; z-index: 1; right: 30px; bottom: 30px; font-style: normal; color: var(--accent); transition: transform .5s var(--ease); }
+  .cat:hover em { transform: translateX(6px); }
+
+  /* Philosophy */
+  .phil-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: center; gap: 70px; margin-top: 60px; padding-left: calc(var(--pad) + 80px); }
+  .phil-grid .ph { aspect-ratio: 4 / 5; }
+  .phil-txt h3 { font: 400 46px/1.15 var(--display); letter-spacing: .03em; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
+  .phil-txt p { max-width: 48ch; margin-top: 26px; color: #cfcdc8; }
+  .phil-txt .sign { margin-top: 32px; color: #fff; }
+  .phil-txt .sign b { display: block; font-weight: 700; }
+  .phil-txt .btn { margin-top: 34px; }
+
+  /* Services */
+  .svc { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin-top: 56px; padding: 0 var(--pad); }
+  .svc a { display: block; }
+  .svc .top { position: relative; height: 170px; padding: 22px 24px; background: var(--light); color: var(--light-ink); transition: background-color .4s; }
+  .svc a:hover .top { background: var(--accent); }
+  .svc .top h3 { position: absolute; left: 24px; bottom: 20px; font: 400 26px/1.15 var(--sans); letter-spacing: .01em; text-transform: uppercase; }
+  .svc .more { position: absolute; top: 18px; right: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #3d4441; }
+  .svc .more svg { width: 54px; height: 54px; color: var(--accent); transition: transform .5s var(--ease), color .4s; }
+  .svc a:hover .more svg { color: var(--light-ink); transform: translate(4px, -4px); }
+  .svc .ph { aspect-ratio: 4 / 5; }
+  .svc .ph img { transition: transform 1.2s var(--ease); }
+  .svc a:hover .ph img { transform: scale(1.06); }
+
+  /* Studio numbers */
+  .nums { display: grid; grid-template-columns: repeat(4, 1fr); margin: 0 var(--pad); border-top: 1px solid rgba(230, 228, 223, .18); border-bottom: 1px solid rgba(230, 228, 223, .18); }
+  .nums div { padding: 46px 10px; text-align: center; }
+  .nums div + div { border-left: 1px solid rgba(230, 228, 223, .18); }
+  .nums b { display: block; font: 400 58px/1 var(--display); color: #fff; }
+  .nums span { display: block; margin-top: 12px; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+
+  /* Contact: a light section with running headings and the form */
+  .contact { padding: 110px 0 120px; background: var(--light); color: var(--light-ink); overflow: hidden; }
+  .run { display: flex; width: max-content; font: 400 64px/1.15 var(--display); letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; }
+  .run span { padding-right: .8em; }
+  .run.l { animation: run-l 40s linear infinite; }
+  .run.r { animation: run-r 40s linear infinite; }
+  @keyframes run-l { to { transform: translateX(-50%); } }
+  @keyframes run-r { from { transform: translateX(-50%); } to { transform: none; } }
+  .contact .sub { margin-top: 26px; text-align: center; font-style: italic; color: #4c524f; }
+  .mark { display: block; width: 34px; height: 34px; margin: 22px auto 0; color: var(--accent); }
+  .form { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 28px; width: min(640px, calc(100% - 2 * var(--pad))); margin: 34px auto 0; }
+  .fl { position: relative; padding-top: 16px; }
+  .fl.full { grid-column: 1 / -1; }
+  .fl input, .fl textarea { width: 100%; padding: 10px 0 8px; border: 0; border-bottom: 1px solid #8e928f; border-radius: 0; background: none; color: var(--light-ink); font-size: 16px; outline: none; transition: border-color .3s; }
+  .fl textarea { min-height: 110px; resize: vertical; }
+  .fl label { position: absolute; left: 0; top: 26px; color: #4c524f; pointer-events: none; transition: top .3s var(--ease), font-size .3s var(--ease), color .3s; }
+  .fl input:focus, .fl textarea:focus { border-bottom-color: var(--light-ink); }
+  .fl input:focus + label, .fl input:not(:placeholder-shown) + label, .fl textarea:focus + label, .fl textarea:not(:placeholder-shown) + label { top: 0; font-size: 12px; color: #1e7a5d; }
+  .chips { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; border: 0; }
+  .chips legend { width: 100%; margin-bottom: 8px; color: #4c524f; }
+  .chips label { position: relative; cursor: pointer; }
+  .chips input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .chips span { display: inline-block; padding: 7px 16px; border: 1px solid #8e928f; border-radius: 999px; font-size: 14px; transition: background-color .25s, color .25s, border-color .25s; }
+  .chips label:hover span { border-color: var(--light-ink); }
+  .chips input:checked + span { background: var(--light-ink); color: var(--light); border-color: var(--light-ink); }
+  .chips input:focus-visible + span { outline: 2px solid #1e7a5d; outline-offset: 2px; }
+  .hp { position: absolute; left: -9999px; }
+  .form .btn { grid-column: 1 / -1; justify-self: center; margin-top: 30px; padding: 18px 44px; border-radius: 999px; }
+  .form .btn:hover { background: var(--light-ink); color: var(--light); }
+  .form .btn:disabled { opacity: .6; cursor: progress; }
+  .status { grid-column: 1 / -1; text-align: center; font-size: 14px; }
+  .status:empty { display: none; }
+  .status.err { color: #b3261e; }
+  .credit { grid-column: 1 / -1; text-align: center; font-size: 12px; color: #5b615e; }
+  .credit a { text-decoration: underline; text-underline-offset: 2px; }
+  .thanks { display: none; grid-column: 1 / -1; padding: 26px 0; text-align: center; }
+  .thanks strong { display: block; font: 400 34px/1.2 var(--display); text-transform: uppercase; }
+  .thanks button { margin-top: 18px; padding: 10px 20px; border: 1px solid var(--light-ink); border-radius: 999px; background: none; cursor: pointer; }
+  .form.is-sent > :not(.thanks):not(.status) { display: none; }
+  .form.is-sent .thanks { display: block; }
+
+  footer { background: var(--bg-2); color: #9e9e9a; padding: 64px var(--pad) 26px; }
+  .f-grid { display: grid; grid-template-columns: 1fr 1fr 1.2fr 1fr; gap: 30px; }
+  footer .logo { font-size: 30px; }
+  footer ul { list-style: none; }
+  footer li a { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; line-height: 2.4; transition: color .3s; }
+  footer a:hover { color: var(--accent); }
+  .social { display: flex; gap: 14px; }
+  .social a { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid #3a3d3c; border-radius: 50%; }
+  .social svg { width: 16px; height: 16px; }
+  .f-contact p { margin-top: 14px; }
+  .f-contact .tel { display: block; margin-top: 18px; font-size: 18px; color: #fff; }
+  .f-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin-top: 48px; padding-top: 20px; border-top: 1px solid #222524; font-size: 12px; color: rgba(255, 255, 255, .35); }
+  .f-bottom a { text-decoration: underline; text-underline-offset: 2px; }
+
+  /* Scroll-in fades (scripts on, motion allowed) */
+  .anim [data-in] { opacity: 0; transition: opacity 1s ease, transform 1s var(--ease); }
+  .anim [data-in="up"] { transform: translateY(40px); }
+  .anim [data-in="down"] { transform: translateY(-40px); }
+  .anim [data-in="right"] { transform: translateX(-60px); }
+  .anim [data-in="left"] { transform: translateX(60px); }
+  .anim [data-in].in { opacity: 1; transform: none; }
+
+  @media (max-width: 1100px) {
+    header nav { gap: 22px; }
+    .nav-l { padding-right: 26px; }
+    .nav-r { padding-left: 26px; }
+    .svc { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .phil-grid { padding-left: var(--pad); gap: 44px; }
+    .phil-txt h3 { white-space: normal; font-size: 38px; }
+  }
+  @media (max-width: 860px) {
+    :root { --head: 64px; }
+    header { grid-template-columns: auto 1fr auto; }
+    header nav { display: none; }
+    .logo { font-size: 26px; }
+    .right { justify-content: flex-end; gap: 6px; }
+    .burger { display: grid; place-items: center; }
+    header.open { background: var(--bg); }
+    header.open nav { display: flex; position: fixed; left: 0; right: 0; flex-direction: column; gap: 0; padding: 0 var(--pad); background: var(--bg); }
+    header.open .nav-l { top: var(--head); padding: 14px var(--pad) 0; }
+    header.open .nav-r { top: calc(var(--head) + 104px); padding: 0 var(--pad) 18px; border-bottom: 1px solid #2a2d2c; }
+    header.open nav a { padding: 12px 0; }
+    .cap h2 { font-size: 40px; }
+    .cap { max-width: none; right: var(--pad); }
+    .hero-ctl .count { display: none; }
+    section { padding: 80px 0; }
+    .h2 { font-size: 32px; }
+    .cats { gap: 16px; }
+    .phil-grid { grid-template-columns: 1fr; padding: 0 var(--pad); }
+    .phil-txt h3 { font-size: 32px; }
+    .svc { grid-template-columns: 1fr; }
+    .svc .top { height: 140px; }
+    .nums { grid-template-columns: 1fr 1fr; }
+    .nums div:nth-child(3) { border-left: 0; }
+    .nums div:nth-child(n+3) { border-top: 1px solid rgba(230, 228, 223, .18); }
+    .nums b { font-size: 44px; }
+    .run { font-size: 40px; }
+    .form { grid-template-columns: 1fr; }
+    .f-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body>
+<header id="top-bar">
+  <nav class="nav-l" aria-label="Main, left"><a href="#about">About</a><a href="#projects">Projects</a></nav>
+  <a class="logo" href="#top" aria-label="Kavelle, home">Kavelle</a>
+  <div class="right">
+    <nav class="nav-r" aria-label="Main, right"><a href="#services">Services</a><a href="#contact">Contact</a></nav>
+    <span class="lang">EN</span>
+    <button class="burger" type="button" aria-label="Menu" aria-expanded="false" data-burger><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h18M3 16h18"/></svg></button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" aria-roledescription="carousel" aria-label="Selected projects" style="padding:0" data-hero>
+    <h1 class="sr">Kavelle, interior design and architecture studio</h1>
+    <article class="slide on" aria-roledescription="slide" aria-label="1 of 5"><img src="img/slide-1.webp" width="1536" height="1024" alt="A travertine villa behind a dark reflecting pool at dusk" fetchpriority="high"><div class="cap"><h2>Casa Luma</h2><a class="btn" href="#projects">View project <span class="arr" aria-hidden="true">→</span></a></div></article>
+    <article class="slide" aria-roledescription="slide" aria-label="2 of 5"><img src="img/slide-2.webp" width="1536" height="1024" alt="A living room with a curved stone wall and green accents" loading="lazy"><div class="cap"><h2>Stone Ribbon</h2><a class="btn" href="#projects">View project <span class="arr" aria-hidden="true">→</span></a></div></article>
+    <article class="slide" aria-roledescription="slide" aria-label="3 of 5"><img src="img/slide-3.webp" width="1536" height="1024" alt="A glass and dark timber house among pines in fog" loading="lazy"><div class="cap"><h2>North Glass</h2><a class="btn" href="#projects">View project <span class="arr" aria-hidden="true">→</span></a></div></article>
+    <article class="slide" aria-roledescription="slide" aria-label="4 of 5"><img src="img/slide-4.webp" width="1536" height="1024" alt="A dining room with deep green lacquered walls" loading="lazy"><div class="cap"><h2>Jade Room</h2><a class="btn" href="#projects">View project <span class="arr" aria-hidden="true">→</span></a></div></article>
+    <article class="slide" aria-roledescription="slide" aria-label="5 of 5"><img src="img/slide-5.webp" width="1536" height="1024" alt="A boutique showroom under warm stone arches" loading="lazy"><div class="cap"><h2>Quiet Atelier</h2><a class="btn" href="#projects">View project <span class="arr" aria-hidden="true">→</span></a></div></article>
+    <div class="bars" aria-hidden="true" data-bars><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="hero-ctl">
+      <p class="count" aria-live="polite"><b data-cur>01</b> / 05</p>
+      <button type="button" aria-label="Previous project" data-prev><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button type="button" aria-label="Next project" data-next><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </section>
+
+  <section id="projects" aria-labelledby="projects-h">
+    <h2 class="h2" id="projects-h" data-in="down">Projects</h2>
+    <p class="lead" data-in="up">Homes, buildings and places to eat, from the first sketch to the last cushion. Drag the row or scroll it sideways.</p>
+    <div class="cats" data-cats>
+      <a class="cat ph" href="#contact" data-in="up"><img src="img/cat-1.webp" width="1200" height="800" alt="A calm bedroom suite in stone and linen" loading="lazy" draggable="false"><span>Private</span><em aria-hidden="true">→</em></a>
+      <a class="cat ph" href="#contact" data-in="up"><img src="img/cat-2.webp" width="1200" height="800" alt="A concrete and timber house on a hillside" loading="lazy" draggable="false"><span>Architecture</span><em aria-hidden="true">→</em></a>
+      <a class="cat ph" href="#contact" data-in="up"><img src="img/cat-3.webp" width="1200" height="800" alt="A restaurant with green velvet booths" loading="lazy" draggable="false"><span>Commercial</span><em aria-hidden="true">→</em></a>
+    </div>
+  </section>
+
+  <section id="about" aria-labelledby="about-h">
+    <h2 class="h2" id="about-h" data-in="down">Studio philosophy</h2>
+    <div class="phil-grid">
+      <div class="ph" data-in="right"><img src="img/founder.webp" width="800" height="1000" alt="Ilse Kavell, founder of the studio" loading="lazy"></div>
+      <div class="phil-txt" data-in="left">
+        <h3>A home that sounds<br>like its owner</h3>
+        <p>For me, design is a careful way of turning a feeling into a room. It does not matter how many things a space holds if together they say nothing about the people who live there. Comfort comes from a whole idea, and from materials, textures and objects that agree with each other.</p>
+        <p>Each project is led by one architect from the first meeting to the handover, with the whole studio behind them.</p>
+        <p class="sign"><b>Ilse Kavell,</b>Founder</p>
+        <a class="btn" href="#contact">Read more <span class="arr" aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="services" aria-labelledby="services-h">
+    <h2 class="h2" id="services-h" data-in="down">Services</h2>
+    <div class="svc">
+      <a href="#contact" data-in="up" data-service="Interior design"><div class="top"><span class="more">More<svg viewBox="0 0 54 54" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 46 46 8M18 8h28v28"/></svg></span><h3>Interior<br>design</h3></div><div class="ph"><img src="img/svc-1.webp" width="800" height="1000" alt="Material samples and sketches on a table" loading="lazy"></div></a>
+      <a href="#contact" data-in="up" data-service="Architecture" style="transition-delay:.08s"><div class="top"><span class="more">More<svg viewBox="0 0 54 54" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 46 46 8M18 8h28v28"/></svg></span><h3>Architecture</h3></div><div class="ph"><img src="img/svc-2.webp" width="800" height="1000" alt="A white model of a house on a drawing" loading="lazy"></div></a>
+      <a href="#contact" data-in="up" data-service="Site supervision" style="transition-delay:.16s"><div class="top"><span class="more">More<svg viewBox="0 0 54 54" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 46 46 8M18 8h28v28"/></svg></span><h3>Site<br>supervision</h3></div><div class="ph"><img src="img/svc-3.webp" width="800" height="1000" alt="An architect checking drawings on a building site" loading="lazy"></div></a>
+      <a href="#contact" data-in="up" data-service="Turnkey project" style="transition-delay:.24s"><div class="top"><span class="more">More<svg viewBox="0 0 54 54" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 46 46 8M18 8h28v28"/></svg></span><h3>Turnkey<br>project</h3></div><div class="ph"><img src="img/svc-4.webp" width="800" height="1000" alt="A finished kitchen with stone and oak" loading="lazy"></div></a>
+    </div>
+  </section>
+
+  <div class="nums" aria-label="The studio in numbers" data-in="up">
+    <div><b data-count="14">14</b><span>Years of practice</span></div>
+    <div><b data-count="120">120</b><span>Homes finished</span></div>
+    <div><b data-count="9">9</b><span>Countries</span></div>
+    <div><b data-count="18">18</b><span>People in the studio</span></div>
+  </div>
+  <div style="height:120px"></div>
+
+  <section class="contact" id="contact" aria-labelledby="contact-h">
+    <h2 class="sr" id="contact-h">Ready to talk about your project?</h2>
+    <div class="run l" aria-hidden="true" data-run>Ready to talk about</div>
+    <div class="run r" aria-hidden="true" data-run>your project?</div>
+    <p class="sub">Fill in the form and we will get back to you within one working day.</p>
+    <svg class="mark" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="16" cy="16" r="13"/><path d="M12 8v16M12 16l8-8M12 16l8 8"/></svg>
+    <!-- Formgong form. Replace fk_your_access_key with the access key from your Formgong dashboard. -->
+    <form class="form" id="f-contact" action="https://formgong.com/submit" method="POST">
+      <input type="hidden" name="access_key" value="fk_your_access_key">
+      <input type="hidden" name="subject" value="New project from the website">
+      <div class="hp" aria-hidden="true"><label>Leave this field empty<input name="botcheck" tabindex="-1" autocomplete="off"></label></div>
+      <div class="fl"><input id="c-name" name="name" autocomplete="name" placeholder=" " maxlength="100"><label for="c-name">Name</label></div>
+      <div class="fl"><input id="c-email" name="email" type="email" autocomplete="email" placeholder=" " required maxlength="160"><label for="c-email">Email *</label></div>
+      <div class="fl full"><input id="c-phone" name="phone" type="tel" autocomplete="tel" placeholder=" " required maxlength="40"><label for="c-phone">Phone *</label></div>
+      <fieldset class="chips">
+        <legend>What would you like to discuss?</legend>
+        <label><input type="radio" name="service" value="Interior design" checked><span>Interior design</span></label>
+        <label><input type="radio" name="service" value="Architecture"><span>Architecture</span></label>
+        <label><input type="radio" name="service" value="Site supervision"><span>Site supervision</span></label>
+        <label><input type="radio" name="service" value="Turnkey project"><span>Turnkey project</span></label>
+      </fieldset>
+      <div class="fl full"><textarea id="c-msg" name="message" placeholder=" " maxlength="3000"></textarea><label for="c-msg">Comments</label></div>
+      <button class="btn" type="submit"><span data-send-label>Send</span></button>
+      <p class="status" data-status role="status" aria-live="polite"></p>
+      <p class="credit">Powered by <a href="https://formgong.com" rel="noopener">Formgong</a></p>
+      <div class="thanks" tabindex="-1"><strong>Thank you, <span data-name>there</span></strong>We will call or write within one working day.<br><button type="button" data-again>Send another message</button></div>
+    </form>
+  </section>
+</main>
+
+<footer>
+  <div class="f-grid">
+    <div><a class="logo" href="#top">Kavelle</a><p style="margin-top:14px;max-width:26ch">Interior design and architecture studio. A fictional studio for a website template.</p></div>
+    <ul><li><a href="#top">Home</a></li><li><a href="#about">About</a></li><li><a href="#projects">Projects</a></li><li><a href="#services">Services</a></li></ul>
+    <ul><li><a href="#services">Interior design</a></li><li><a href="#services">Architecture</a></li><li><a href="#services">Site supervision</a></li><li><a href="#contact">Contact</a></li></ul>
+    <div class="f-contact">
+      <div class="social">
+        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/></svg></a>
+        <a href="#" aria-label="Pinterest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M11 8.5c3-1 5.5.6 5 3.4-.5 2.6-3.6 3.4-4.6 1.6M11.5 9.5 9 21"/></svg></a>
+        <a href="#" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20l1.4-4A8 8 0 1 1 8 18.6z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1c-1-.5-2-1.5-2.5-2.5l1-1-1-2z"/></svg></a>
+      </div>
+      <p>Mon – Fri, 9 am – 6 pm</p>
+      <a class="tel" href="tel:+442070000000">+44 20 7000 0000</a>
+      <a href="mailto:studio@example.com">studio@example.com</a>
+    </div>
+  </div>
+  <div class="f-bottom"><p><span data-year>2026</span> © Kavelle. Names, projects and numbers are examples.</p><p>Template powered by <a href="https://formgong.com" rel="noopener">Formgong</a></p></div>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  $$("[data-year]").forEach(function (n) { n.textContent = new Date().getFullYear(); });
+  if (!still) root.classList.add("anim");
+
+  // Header turns solid after the first screen starts to scroll; phone menu.
+  var bar = $("#top-bar");
+  function onScroll() { bar.classList.toggle("solid", scrollY > 40); }
+  addEventListener("scroll", onScroll, { passive: true }); onScroll();
+  var burger = $("[data-burger]");
+  burger.addEventListener("click", function () { var open = bar.classList.toggle("open"); burger.setAttribute("aria-expanded", String(open)); });
+  $$("header nav a").forEach(function (a) { a.addEventListener("click", function () { bar.classList.remove("open"); burger.setAttribute("aria-expanded", "false"); }); });
+
+  // Slider: fade every 5 s, letters of the title rise one by one.
+  var slides = $$(".slide"), bars = $$("[data-bars] i"), cur = $("[data-cur]"), idx = 0, timer = null, DELAY = 5000;
+  slides.forEach(function (s) {
+    var h = $("h2", s), t = h.textContent;
+    h.setAttribute("aria-label", t); h.textContent = "";
+    t.split("").forEach(function (ch, i) { var l = document.createElement("span"); l.className = "l"; l.textContent = ch; l.style.setProperty("--i", i); l.setAttribute("aria-hidden", "true"); h.appendChild(l); });
+  });
+  function show(n) {
+    idx = (n + slides.length) % slides.length;
+    slides.forEach(function (s, i) { s.classList.toggle("on", i === idx); s.setAttribute("aria-hidden", String(i !== idx)); $(".btn", s).tabIndex = i === idx ? 0 : -1; });
+    bars.forEach(function (b, i) { b.className = i < idx ? "done" : ""; });
+    cur.textContent = String(idx + 1).padStart(2, "0");
+    if (!still) { void bars[idx].offsetWidth; bars[idx].style.setProperty("--dur", DELAY + "ms"); bars[idx].className = "run"; }
+    clearTimeout(timer);
+    if (!still) timer = setTimeout(function () { show(idx + 1); }, DELAY);
+  }
+  $("[data-prev]").addEventListener("click", function () { show(idx - 1); });
+  $("[data-next]").addEventListener("click", function () { show(idx + 1); });
+  document.addEventListener("visibilitychange", function () { if (document.hidden) clearTimeout(timer); else show(idx); });
+  show(0);
+
+  // Project categories: drag the row with the mouse.
+  var cats = $("[data-cats]"), down = false, sx = 0, sl = 0, moved = false;
+  cats.addEventListener("pointerdown", function (e) { if (e.pointerType !== "mouse") return; down = true; moved = false; sx = e.clientX; sl = cats.scrollLeft; });
+  addEventListener("pointermove", function (e) { if (!down) return; var dx = e.clientX - sx; if (Math.abs(dx) > 4) { moved = true; cats.classList.add("drag"); } cats.scrollLeft = sl - dx; });
+  addEventListener("pointerup", function () { down = false; cats.classList.remove("drag"); });
+  cats.addEventListener("click", function (e) { if (moved) { e.preventDefault(); moved = false; } }, true);
+  cats.addEventListener("dragstart", function (e) { e.preventDefault(); }); // links would start a native drag instead
+
+  // Fades as blocks scroll in, and the numbers count up.
+  function count(el) {
+    var end = +el.dataset.count, t0 = null;
+    function step(t) { if (!t0) t0 = t; var p = Math.min(1, (t - t0) / 1400); el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  }
+  if (!still && "IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("in"); io.unobserve(e.target);
+        $$("[data-count]", e.target).forEach(count);
+      });
+    }, { rootMargin: "0px 0px -12% 0px" });
+    $$("[data-in]").forEach(function (el) { io.observe(el); });
+  }
+
+  // Running headings: repeat the text so the loop has no gap.
+  $$("[data-run]").forEach(function (r) { var t = r.textContent; r.innerHTML = Array(8).fill("<span>" + t + "</span>").join(""); });
+
+  // A service card fills in the topic of the form.
+  $$("[data-service]").forEach(function (a) {
+    a.addEventListener("click", function () { var v = a.dataset.service, r = $('#f-contact input[name="service"][value="' + v + '"]'); if (r) r.checked = true; });
+  });
+
+  // Form: thanks only when Formgong answers success: true.
+  var form = $("#f-contact"), button = $(".btn", form), label = $("[data-send-label]", form), status = $("[data-status]", form);
+  function say(text, bad) { status.textContent = text; status.classList.toggle("err", !!bad); }
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    button.disabled = true; label.textContent = "Sending…"; say("");
+    var first = (form.elements.namedItem("name").value || "").trim().split(/\s+/)[0];
+    fetch(form.action, { method: "POST", headers: { Accept: "application/json" }, body: new FormData(form) })
+      .then(function (res) { return res.json().catch(function () { return null; }); })
+      .then(function (result) {
+        if (result && result.success === true) {
+          $("[data-name]", form).textContent = first || "there";
+          form.reset();
+          form.classList.add("is-sent");
+          $(".thanks", form).focus();
+        } else {
+          say((result && result.message) || "Could not send. Please try again.", true);
+        }
+      })
+      .catch(function () { say("Could not send. Check your connection and try again.", true); })
+      .then(function () { button.disabled = false; label.textContent = "Send"; });
+  });
+  $("[data-again]", form).addEventListener("click", function () { form.classList.remove("is-sent"); say(""); form.elements.namedItem("name").focus(); });
+})();
+</script>
+</body>
+</html>
